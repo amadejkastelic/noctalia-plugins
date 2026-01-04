@@ -1,11 +1,11 @@
 {
   "cheatsheetData": [
     {
-      "title": "BŁĄD",
+      "title": "ERROR",
       "binds": [
         {
           "keys": "ERROR",
-          "desc": "Nie można pobrać $HOME"
+          "desc": "Cannot get $HOME"
         }
       ]
     }
