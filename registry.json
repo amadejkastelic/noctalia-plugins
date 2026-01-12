@@ -295,6 +295,21 @@
       "lastUpdated": "2026-01-11T10:27:58-05:00"
     },
     {
+      "id": "unicode-picker",
+      "name": "Unicode Picker",
+      "version": "1.0.0",
+      "author": "Daddeffe",
+      "description": "Browse and search Unicode characters from the launcher",
+      "repository": "https://github.com/noctalia-dev/noctalia-plugins",
+      "minNoctaliaVersion": "3.9.0",
+      "license": "MIT",
+      "tags": [
+        "Launcher",
+        "Utilities"
+      ],
+      "lastUpdated": "2026-01-12T17:50:51+01:00"
+    },
+    {
       "id": "update-count",
       "name": "Update Count",
       "version": "1.0.9",
