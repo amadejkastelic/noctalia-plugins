@@ -7,6 +7,7 @@
   "license": "MIT",
   "repository": "https://github.com/alxndrv/noctalia-plugins",
   "description": "Plugin for controlling Philips Hue lights from the taskbar",
+  "tags": ["Bar", "Panel"],
   "entryPoints": {
     "main": "Main.qml",
     "barWidget": "BarWidget.qml",
