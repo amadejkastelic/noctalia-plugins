@@ -50,13 +50,6 @@ Rectangle {
     checkSteamProcess.running = true;
   }
 
-  // Process to toggle Steam overlay via IPC
-  Process {
-    id: toggleProcess
-    command: ["qs", "-p", Quickshell.shellDir, "ipc", "call", "plugin:hyprland-steam-overlay", "toggle"]
-    running: false
-  }
-
   RowLayout {
     id: contentRow
     anchors.centerIn: parent
