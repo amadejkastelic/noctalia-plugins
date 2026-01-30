@@ -28,14 +28,14 @@ Item {
         printErrors: false
 
         onLoaded: {
-            root.batteryModelName = text().trim()
+            root.batteryModelName = text().trim();
         }
     }
 
     function writeThreshold(value) {
         if (!service.isWritable)
-            return
-        service.setThreshold(value)
+            return;
+        service.setThreshold(value);
     }
 
     Rectangle {
@@ -61,8 +61,7 @@ Item {
                 }
 
                 NText {
-                    visible: !service.isAvailable
-                             || root.batteryModelName !== ""
+                    visible: !service.isAvailable || root.batteryModelName !== ""
                     text: !service.isAvailable ? "Not available on this system" : root.batteryModelName
                     pointSize: Style.fontSizeM
                     color: Color.mOnSurfaceVariant
