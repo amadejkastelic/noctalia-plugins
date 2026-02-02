@@ -22,7 +22,7 @@ Item {
   readonly property bool showTempValue: pluginApi?.pluginSettings?.showTempValue ?? true
   readonly property bool showConditionIcon: pluginApi?.pluginSettings?.showConditionIcon ?? true
   readonly property bool showTempUnit: pluginApi?.pluginSettings?.showTempUnit ?? true
-  readonly property int tooltipOption: pluginApi?.pluginSettings?.tooltipOption ?? 0
+  readonly property string tooltipOption: pluginApi?.pluginSettings?.tooltipOption || pluginApi?.manifest?.defaultSettings?.tooltipOption || "all"
 
   // Bar positioning properties
   readonly property string screenName: screen ? screen.name : ""
@@ -103,10 +103,11 @@ MouseArea {
     id: mouseArea
     anchors.fill: parent
     hoverEnabled: true
-    cursorShape: tooltipOption === 0 ? Qt.ArrowCursor : Qt.PointingHandCursor
+    cursorShape: Qt.PointingHandCursor
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
 
     onEntered: {
-        if (tooltipOption !== 0) {
+        if (tooltipOption !== "disable") {
             buildTooltip();
         }
     }
@@ -114,7 +115,45 @@ MouseArea {
     onExited: {
     TooltipService.hide();
     }
+
+    onClicked: function (mouse) {
+      if (mouse.button === Qt.LeftButton) {
+        if (pluginApi) {
+          PanelService.getPanel("clockPanel", screen)?.toggle(root);
+        }
+      } else if (mouse.button === Qt.RightButton) {
+        PanelService.showContextMenu(contextMenu, root, screen);
+      }
+    }
 }
+
+  NPopupContextMenu {
+    id: contextMenu
+
+    model: [
+      {
+        "label": pluginApi?.tr("menu.openPanel") || "Open Calendar",
+        "action": "open",
+        "icon": "calendar"
+      },
+      {
+        "label": pluginApi?.tr("menu.settings") || "Widget Settings",
+        "action": "settings",
+        "icon": "settings"
+      }
+    ]
+
+    onTriggered: function (action) {
+      contextMenu.close();
+      PanelService.closeContextMenu(screen);
+
+      if (action === "open") {
+        PanelService.getPanel("clockPanel", screen)?.toggle(root);
+      } else if (action === "settings") {
+        BarService.openPluginSettings(screen, pluginApi.manifest);
+      }
+    }
+  }
 
 function buildCurrentTemp() {
     let rows = [];
@@ -163,28 +202,27 @@ function buildSunriseSunset() {
 }
 
 function buildTooltip() {
+    let allRows = [];
     switch (tooltipOption) {
-        case 1: {
-            TooltipService.show(root, buildHiLowTemps(), BarService.getTooltipDirection())
+        case "highlow": {
+            allRows.push(...buildHiLowTemps());
             break
         }
-
-        case 2:
-            var tooltip = buildSunriseSunset()
-            TooltipService.show(root, tooltip, BarService.getTooltipDirection())
+        case "sunrise": {
+            allRows.push(...buildSunriseSunset())
             break
-
-        case 3:
-            var tooltip = buildCurrentTemp()
-            var tooltip1 = buildHiLowTemps()
-            var tooltip2 = buildSunriseSunset()
-            const combined = [...tooltip,...tooltip1, ...tooltip2];
-
-            TooltipService.show(root, combined, BarService.getTooltipDirection())
+        }
+        case "everything": {
+            allRows.push(...buildCurrentTemp());
+            allRows.push(...buildHiLowTemps())
+            allRows.push(...buildSunriseSunset());
             break
-
+        }
         default:
             break
     }
-}
+    if (allRows.length > 0) {
+      TooltipService.show(root, allRows, BarService.getTooltipDirection())
+    }
+  }
 }

@@ -22,5 +22,16 @@
       "sunrise": "Sunrise/set times",
       "everything": "Show all"
     }
+  },
+  "tooltips": {
+    "current": "Current",
+    "high": "High",
+    "low": "Low",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset"
+  },
+  "menu": {
+    "openPanel": "Open Calendar",
+    "settings": "Widget Settings"
   }
 }
