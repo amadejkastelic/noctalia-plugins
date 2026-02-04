@@ -264,11 +264,11 @@
     },
     {
       "id": "mpvpaper",
-      "name": "Mpvpaper Integration",
-      "version": "1.4.0",
+      "name": "Mpvpaper",
+      "version": "1.5.0",
       "official": false,
       "author": "Spyridon Siarapis",
-      "description": "Integration of mpvpaper to control mpvpaper through noctalia",
+      "description": "A plugin that allows having video wallpapers using mpvpaper.",
       "repository": "https://github.com/noctalia-dev/noctalia-plugins",
       "minNoctaliaVersion": "3.6.0",
       "license": "MIT",
@@ -278,7 +278,7 @@
         "Fun",
         "System"
       ],
-      "lastUpdated": "2026-02-03T16:32:26+01:00"
+      "lastUpdated": "2026-02-04T14:23:36+01:00"
     },
     {
       "id": "network-indicator",
