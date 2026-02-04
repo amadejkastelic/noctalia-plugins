@@ -1,9 +1,8 @@
 {
     "settings": {
-        "calibre_db": "Calibre Database Location",
-        "calibre_db_description": "The metadata.db file at the root of your Calibre library",
-        "input_placeholder": "/path/to/calibre/metadata.db",
-        "icon_tooltip": "Select database file",
-        "file_picker_title": "Choose database file"
+        "launcher": {
+            "title": "Launcher",
+            "description": "The program used to open book files"
+        }
     }
 }

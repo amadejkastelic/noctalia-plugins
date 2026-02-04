@@ -1,9 +1,6 @@
 # Calibre Provider
 
-A launcher provider plugin that lets you search your Calibre library
-
-## Features
-
+A launcher provider plugin that lets you search your Calibre library by title or author.
 
 ## Usage
 
@@ -15,3 +12,4 @@ A launcher provider plugin that lets you search your Calibre library
 
 - Noctalia 4.3.0 or later
 - Calibre
+- xdg-open (Or other smart file opener. You can change this in the settings.)

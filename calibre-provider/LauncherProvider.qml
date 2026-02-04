@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.LocalStorage
 import Quickshell
 import Quickshell.Io
 import qs.Commons
@@ -184,6 +183,6 @@ Item {
 
     function activateEntry(entry) {
         Logger.i("CalibreProvider", "Opening file:", entry.file );
-        Quickshell.execDetached(["xdg-open", entry.file]);
+        Quickshell.execDetached([ pluginApi?.pluginSettings?.launcher || "xdg-open", entry.file]);
     }
 }
