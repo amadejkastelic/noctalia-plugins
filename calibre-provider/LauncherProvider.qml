@@ -29,7 +29,7 @@ Item {
     // TODO: Write a custom one instead
     Process {
         id: calibreDbLoader
-        command: ["calibredb", "list", "--for-machine", "--fields", "title,authors,formats,cover"]
+        command: ["python3", "placeholder"]
         stdout: StdioCollector {
         }
         stderr: StdioCollector {
@@ -52,6 +52,7 @@ Item {
     // Load database on init
     function init() {
         Logger.i("CalibreProvider", "init called, pluginDir:", pluginApi?.pluginDir);
+        calibreDbLoader.command[1] = pluginApi.pluginDir + "/load_calibre_db.py"
         findCalibreLibrary()
     }
 
@@ -94,18 +95,14 @@ Item {
             var rawdb = Array.from(JSON.parse(calibreDbLoader.stdout.text));
             database = []
             rawdb.forEach((entry) => {
-                for(var i = 0; i < entry.formats.length; i++) {
-                    const file = entry.formats[i];
-                    const extension = file.slice(file.lastIndexOf('.')+1).toUpperCase();
                     database.push({
                         title: entry.title,
-                        description: extension + " • " + entry.authors,
+                        description: entry.format + " • " + entry.authors,
                         cover: entry.cover,
-                        file,
+                        file: entry.file,
                         authorSearch: FuzzySort.prepare(entry.authors),
                         titleSearch: FuzzySort.prepare(entry.title)
                     });
-                }
             });
             loaded = true;
             Logger.i("CalibreProvider", "Finished loading db");
