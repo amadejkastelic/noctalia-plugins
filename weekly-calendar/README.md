@@ -35,7 +35,7 @@ As a result of relying on Noctalia's [CalendarService.qml](https://github.com/no
 
 The most straightforward ways to start is by either downloading `evolution` or `gnome-calendar` and set calendars through them. 
 
-## Minimal Requirements
+## Minimum Requirements
 
 - **Noctalia Shell**: 4.2.3 or later.
 - `evolution-data-server` (also needed for Noctalia's month calendar to display events)
