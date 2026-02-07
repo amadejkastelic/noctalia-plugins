@@ -123,7 +123,6 @@ Item {
         stdout: SplitParser {
             onRead: line => {
                 root.thumbCacheFolderFiles.push(line);
-                Logger.d("video-wallpaper", line);
             }
         }
     }
