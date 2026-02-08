@@ -67,6 +67,16 @@ Item {
   function updateMicrophoneState(nodes, links) {
     var appNames = [];
     var isActive = false;
+
+    var filterRegex = null;
+    if (root.micFilterRegex && root.micFilterRegex.length > 0) {
+      try {
+        filterRegex = new RegExp(root.micFilterRegex);
+      } catch (e) {
+        console.warn("PrivacyIndicator: Invalid micFilterRegex:", root.micFilterRegex);
+      }
+    }
+
     for (var i = 0; i < nodes.length; i++) {
       var node = nodes[i];
       if (!node || !node.isStream || !node.audio || node.isSink) continue;
@@ -74,8 +84,11 @@ Item {
       var mediaClass = node.properties["media.class"] || "";
       if (mediaClass === "Stream/Input/Audio") {
         if (node.properties["stream.capture.sink"] === "true") continue;
-        isActive = true;
+
         var appName = getAppName(node);
+        if (filterRegex && appName && filterRegex.test(appName)) continue;
+
+        isActive = true;
         if (appName && appNames.indexOf(appName) === -1) appNames.push(appName);
       }
     }
@@ -240,6 +253,7 @@ Item {
   property var cfg: pluginApi?.pluginSettings || ({})
   property var defaults: pluginApi?.manifest?.metadata?.defaultSettings || ({})
   property string activeColorKey: cfg.activeColor ?? defaults.activeColor ?? "primary"
+  property string micFilterRegex: cfg.micFilterRegex ?? defaults.micFilterRegex ?? ""
 
   onMicAppsChanged: {
     checkAppChanges(micApps, _prevMicApps, "Microphone", "microphone", activeColorKey);

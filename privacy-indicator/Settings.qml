@@ -16,6 +16,7 @@ ColumnLayout {
   property int iconSpacing: cfg.iconSpacing || Style.marginXS
   property string activeColor: cfg.activeColor ?? defaults.activeColor
   property string inactiveColor: cfg.inactiveColor ?? defaults.inactiveColor
+  property string micFilterRegex: cfg.micFilterRegex ?? defaults.micFilterRegex
 
   spacing: Style.marginL
 
@@ -87,6 +88,15 @@ ColumnLayout {
       currentKey: root.iconSpacing.toFixed(0)
       onSelected: key => root.iconSpacing = key
     }
+
+    NTextInput {
+      Layout.fillWidth: true
+      label: pluginApi?.tr("settings.micFilterRegex.label") || "Microphone filter regex"
+      description: pluginApi?.tr("settings.micFilterRegex.desc") || "Regex pattern to filter out microphone applications"
+      placeholderText: "effect_input.rnnoise|easyeffects"
+      text: root.micFilterRegex
+      onTextChanged: root.micFilterRegex = text
+    }
   }
 
   function saveSettings() {
@@ -100,6 +110,7 @@ ColumnLayout {
     pluginApi.pluginSettings.removeMargins = root.removeMargins;
     pluginApi.pluginSettings.activeColor = root.activeColor;
     pluginApi.pluginSettings.inactiveColor = root.inactiveColor;
+    pluginApi.pluginSettings.micFilterRegex = root.micFilterRegex;
 
     pluginApi.saveSettings();
 
