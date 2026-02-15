@@ -13,16 +13,28 @@ Item {
     /***************************
     * PROPERTIES
     ***************************/
-    readonly property string currentWallpaper:     pluginApi?.pluginSettings?.currentWallpaper     || ""
-    readonly property bool   enabled:              pluginApi?.pluginSettings?.enabled              || false
-    readonly property bool   hardwareAcceleration: pluginApi?.pluginSettings?.hardwareAcceleration || pluginApi?.manifest?.metadata?.defaultSettings?.hardwareAcceleration || false
-    readonly property string fillMode:             pluginApi?.pluginSettings?.fillMode             || pluginApi?.manifest?.metadata?.defaultSettings?.fillMode             || ""
-    readonly property bool   isMuted:              pluginApi?.pluginSettings?.isMuted              || false
-    readonly property bool   isPlaying:            pluginApi?.pluginSettings?.isPlaying            || false
-    readonly property string mpvSocket:            pluginApi?.pluginSettings?.mpvSocket            || pluginApi?.manifest?.metadata?.defaultSettings?.mpvSocket || ""
-    readonly property int    orientation:          pluginApi?.pluginSettings?.orientation          || 0
-    readonly property string profile:              pluginApi?.pluginSettings?.profile              || pluginApi?.manifest?.metadata?.defaultSettings?.profile   || ""
-    readonly property double volume:               pluginApi?.pluginSettings?.volume               || pluginApi?.manifest?.metadata?.defaultSettings?.volume    || 0
+    // Required properties
+    required property var    screenData
+    required property string screenName
+    required property int    screenWidth
+    required property int    screenHeight
+
+    // Monitor specific properties
+    readonly property string currentWallpaper:     pluginApi?.pluginSettings?.[screenName]?.currentWallpaper     || ""
+    readonly property bool   hardwareAcceleration: pluginApi?.pluginSettings?.[screenName]?.hardwareAcceleration || pluginApi?.manifest?.metadata?.defaultSettings?.hardwareAcceleration || false
+    readonly property string fillMode:             pluginApi?.pluginSettings?.[screenName]?.fillMode             || pluginApi?.manifest?.metadata?.defaultSettings?.fillMode             || ""
+    readonly property bool   isMuted:              pluginApi?.pluginSettings?.[screenName]?.isMuted              || false
+    readonly property bool   isPlaying:            pluginApi?.pluginSettings?.[screenName]?.isPlaying            || false
+    readonly property int    orientation:          pluginApi?.pluginSettings?.[screenName]?.orientation          || 0
+    readonly property string profile:              pluginApi?.pluginSettings?.[screenName]?.profile              || pluginApi?.manifest?.metadata?.defaultSettings?.profile || ""
+    readonly property double volume:               pluginApi?.pluginSettings?.[screenName]?.volume               || pluginApi?.manifest?.metadata?.defaultSettings?.volume  || 0
+
+    // Global properties
+    readonly property bool   enabled:   pluginApi?.pluginSettings?.enabled   || false
+    readonly property string mpvSocket: pluginApi?.pluginSettings?.mpvSocket || pluginApi?.manifest?.metadata?.defaultSettings?.mpvSocket || ""
+
+    // Constants
+    readonly property string mpvSocketScreen: `${mpvSocket}-${screenName}`
 
 
     /***************************
@@ -30,7 +42,7 @@ Item {
     ***************************/
     function buildMpvCommand() {
         let options = [
-            `input-ipc-server='${root.mpvSocket}'`,
+            `input-ipc-server='${root.mpvSocketScreen}'`,
             `profile='${root.profile}'`,
             `panscan=${root.fillMode === "crop" ? 1 : 0}`,
             `keepaspect='${root.fillMode === "stretch" ? "no" : "yes"}'`,
@@ -45,7 +57,7 @@ Item {
             options.push("no-audio"); }
 
         const optionsString = options.join(" ");
-        const command = `pkill mpvpaper; mpvpaper -o "${optionsString}" ALL "${root.currentWallpaper}"`;
+        const command = `mpvpaper -o "${optionsString}" ${root.screenName} "${root.currentWallpaper}"`;
 
         return ["sh", "-c", command];
     }
@@ -56,7 +68,7 @@ Item {
         mpvProc.command = buildMpvCommand();
         mpvProc.running = true;
 
-        pluginApi.pluginSettings.isPlaying = true;
+        pluginApi.pluginSettings.isPlaying[screenName] = true;
         pluginApi.saveSettings();
     }
 
@@ -69,7 +81,7 @@ Item {
 
     function sendCommandToMPV(command: string) {
         socket.connected = true;
-        socket.path = mpvSocket;
+        socket.path = mpvSocketScreen;
         socket.write(`${command}\n`);
         socket.flush();
     }
@@ -199,7 +211,11 @@ Item {
 
         // Clamp the volume
         if(v != volume) {
-            pluginApi.pluginSettings.volume = v;
+            if (pluginApi?.pluginSettings?.[screenName] === undefined) {
+                pluginApi.pluginSettings[screenName] = {};
+            }
+
+            pluginApi.pluginSettings[screenName].volume = v;
             pluginApi.saveSettings();
         }
     }
@@ -213,6 +229,6 @@ Item {
 
     Socket {
         id: socket
-        path: root.mpvSocket
+        path: root.mpvSocketScreen
     }
 }

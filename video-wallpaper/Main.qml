@@ -1,10 +1,12 @@
 import QtQuick
+import Quickshell
 import Quickshell.Io
 import qs.Commons
 import qs.Services.UI
 
 import "./common"
 import "./main"
+import "./migrations"
 
 Item {
     id: root
@@ -14,8 +16,7 @@ Item {
     /***************************
     * PROPERTIES
     ***************************/
-    readonly property string activeBackend:    pluginApi?.pluginSettings?.activeBackend    || pluginApi?.manifest?.metadata?.defaultSettings?.activeBackend    || ""
-    readonly property string currentWallpaper: pluginApi?.pluginSettings?.currentWallpaper || ""
+    readonly property bool   enabled:          pluginApi?.pluginSettings?.enabled          || false
     readonly property string wallpapersFolder: pluginApi?.pluginSettings?.wallpapersFolder || pluginApi?.manifest?.metadata?.defaultSettings?.wallpapersFolder || ""
 
     readonly property string thumbCacheFolderPath: ImageCacheService.wpThumbDir + "video-wallpaper"
@@ -24,52 +25,20 @@ Item {
     /***************************
     * WALLPAPER FUNCTIONALITY
     ***************************/
-    function random() {
-        if (wallpapersFolder === "") {
-            Logger.e("video-wallpaper", "Wallpapers folder is empty!");
-            return;
-        }
-        if (rootFolderModel.count === 0) {
-            Logger.e("video-wallpaper", "No valid video files found!");
-            return;
-        }
-
-        const rand = Math.floor(Math.random() * rootFolderModel.count);
-        const url = rootFolderModel.get(rand, "filePath");
-        setWallpaper(url);
+    function random(screen) {
+        functions.random(screen);
     }
 
-    function clear() {
-        setWallpaper("");
+    function clear(screen) {
+        functions.clear(screen);
     }
 
-    function nextWallpaper() {
-        if (wallpapersFolder === "") {
-            Logger.e("video-wallpaper", "Wallpapers folder is empty!");
-            return;
-        }
-        if (rootFolderModel.count === 0) {
-            Logger.e("video-wallpaper", "No valid video files found!");
-            return;
-        }
-
-        Logger.d("video-wallpaper", "Choosing next wallpaper...");
-
-        // Even if the file is not in wallpapers folder, aka -1, it sets the nextIndex to 0 then
-        const currentIndex = rootFolderModel.indexOf(root.currentWallpaper);
-        const nextIndex = (currentIndex + 1) % rootFolderModel.count;
-        const url = rootFolderModel.get(nextIndex);
-        setWallpaper(url);
+    function nextWallpaper(screen) {
+        functions.nextWallpaper(screen);
     }
 
-    function setWallpaper(path) {
-        if (root.pluginApi == null) {
-            Logger.e("video-wallpaper", "Can't set the wallpaper because pluginApi is null.");
-            return;
-        }
-
-        pluginApi.pluginSettings.currentWallpaper = path;
-        pluginApi.saveSettings();
+    function setWallpaper(path, screen) {
+        functions.setWallpaper(path, screen);
     }
 
 
@@ -86,50 +55,116 @@ Item {
         thumbnails.thumbRegenerate();
     }
 
-    /***************************
-    * EVENTS
-    ***************************/
-    onActiveBackendChanged: {
-        // Unload old backend and reload the new backend
-        wallpaperLoader.active = false;
-        Qt.callLater(() => {
-            wallpaperLoader.active = true;
-        });
-    }
 
     /***************************
     * COMPONENTS
     ***************************/
-    Loader {
-        id: wallpaperLoader
-        active: true
-        asynchronous: true
-        
-        sourceComponent: {
-            switch (root.activeBackend) {
-                case "mpvpaper":
-                    return mpvpaper;
-                case "qt6-multimedia":
-                    return qtmultimedia;
-                default:
-                    Logger.e("video-wallpaper", "No active backend.");
+    Variants {
+        model: Quickshell.screens
+
+        Item {
+            id: screenItem
+            required property var modelData
+
+            readonly property string name:      modelData.name
+            readonly property int screenWidth:  modelData.width
+            readonly property int screenHeight: modelData.height
+
+            readonly property string activeBackend: root.pluginApi?.pluginSettings?.activeBackend || root.pluginApi?.manifest?.metadata?.defaultSettings?.activeBackend || ""
+
+
+            /***************************
+            * EVENTS
+            ***************************/
+            onActiveBackendChanged: {
+                // Unload old backend and reload the new backend
+                wallpaperLoader.active = false;
+                Qt.callLater(() => {
+                    wallpaperLoader.active = true;
+                });
             }
-        }
-    }
 
-    Component {
-        id: qtmultimedia
 
-        VideoWallpaper {
-            pluginApi: root.pluginApi
-        }
-    }
+            /***************************
+            * BACKEND COMPONENTS
+            ***************************/
+            Loader {
+                id: wallpaperLoader
+                active: root.enabled
+                asynchronous: true
 
-    Component {
-        id: mpvpaper
+                sourceComponent: {
+                    switch (screenItem.activeBackend) {
+                        case "mpvpaper":
+                            return mpvpaper;
+                        case "qt6-multimedia":
+                            return qtmultimedia;
+                        default:
+                            Logger.e("video-wallpaper", "No active backend.");
+                    }
+                }
+            }
 
-        Mpvpaper {
-            pluginApi: root.pluginApi
+            Component {
+                id: qtmultimedia
+
+                VideoWallpaper {
+                    pluginApi: root.pluginApi
+
+                    screenData:   screenItem.modelData
+                    screenName:   screenItem.name
+                    screenWidth:  screenItem.screenWidth
+                    screenHeight: screenItem.screenHeight
+                }
+            }
+
+            Component {
+                id: mpvpaper
+
+                Mpvpaper {
+                    pluginApi: root.pluginApi
+
+                    screenData:   screenItem.modelData
+                    screenName:   screenItem.name
+                    screenWidth:  screenItem.screenWidth
+                    screenHeight: screenItem.screenHeight
+                }
+            }
+
+
+            /***************************
+            * COLOR GENERATION
+            ***************************/
+            ColorGeneration {
+                id: colorgen
+                pluginApi: root.pluginApi
+
+                screenName: screenItem.name
+
+                getThumbPath:         root.getThumbPath
+                thumbCacheFolderPath: root.thumbCacheFolderPath
+
+                folderModel:      rootFolderModel
+                thumbFolderModel: rootThumbFolderModel
+            }
+
+
+            /***************************
+            * NOCTALIA WALLPAPER
+            ***************************/
+            InnerService {
+                pluginApi: root.pluginApi
+
+                screenName: screenItem.name
+
+                getThumbPath:     root.getThumbPath
+                thumbFolderModel: rootThumbFolderModel
+
+                onOldWallpapersSaved: {
+                    // When the old wallpapers are saved and done, inform the color gen.
+                    colorgen.oldWallpapersSaved = true;
+                }
+            }
         }
     }
 
@@ -137,34 +172,34 @@ Item {
         id: thumbnails
         pluginApi: root.pluginApi
 
-        getThumbPath: root.getThumbPath
+        getThumbPath:         root.getThumbPath
         thumbCacheFolderPath: root.thumbCacheFolderPath
 
-        folderModel: rootFolderModel
+        folderModel:      rootFolderModel
         thumbFolderModel: rootThumbFolderModel
-    }
-
-    InnerService {
-        id: innerService
-        pluginApi: root.pluginApi
-
-        getThumbPath: root.getThumbPath
-        thumbFolderModel: rootThumbFolderModel
-
-        onOldWallpapersSaved: {
-            // When the old wallpapers are saved and done, inform the color gen.
-            thumbnails.oldWallpapersSaved = true;
-        }
     }
 
     Automation {
         id: automation
         pluginApi: root.pluginApi
 
-        random: root.random
-        nextWallpaper: root.nextWallpaper
+        onRandom:        (screen) => root.random(screen);
+        onNextWallpaper: (screen) => root.nextWallpaper(screen);
     }
 
+    Migrations {
+        id: migrations
+        pluginApi: root.pluginApi
+    }
+
+    Functions {
+        id: functions
+        pluginApi: root.pluginApi
+
+        folderModel: rootFolderModel
+    }
+
+    // Folder models
     FolderModel {
         id: rootFolderModel
         folder: root.wallpapersFolder

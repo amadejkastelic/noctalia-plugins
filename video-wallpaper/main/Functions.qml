@@ -1,0 +1,82 @@
+import QtQuick
+import Quickshell
+import qs.Commons
+
+import "../common"
+
+Item {
+    id: root
+    required property var pluginApi
+
+
+    /***************************
+    * PROPERTIES
+    ***************************/
+    // Required properties
+    required property FolderModel folderModel
+
+    // Global properties
+    readonly property var currentWallpaper:     pluginApi?.pluginSettings?.currentWallpaper     || ({})
+    readonly property string wallpapersFolder:  pluginApi?.pluginSettings?.wallpapersFolder     || pluginApi?.manifest?.metadata?.defaultSettings?.wallpapersFolder || ""
+
+
+    /***************************
+    * FUNCTIONS
+    ***************************/
+    function random(screen) {
+        if (wallpapersFolder === "") {
+            Logger.e("video-wallpaper", "Wallpapers folder is empty!");
+            return;
+        }
+        if (folderModel.count === 0) {
+            Logger.e("video-wallpaper", "No valid video files found!");
+            return;
+        }
+
+        const rand = Math.floor(Math.random() * folderModel.count);
+        const url = folderModel.get(rand, "filePath");
+        setWallpaper(url, screen);
+    }
+
+    function clear(screen) {
+        setWallpaper("", screen);
+    }
+
+    function nextWallpaper(screen) {
+        if (wallpapersFolder === "") {
+            Logger.e("video-wallpaper", "Wallpapers folder is empty!");
+            return;
+        }
+        if (folderModel.count === 0) {
+            Logger.e("video-wallpaper", "No valid video files found!");
+            return;
+        }
+
+        Logger.d("video-wallpaper", "Choosing next wallpaper...");
+
+        // Even if the file is not in wallpapers folder, aka -1, it sets the nextIndex to 0 then
+        const currentIndex = folderModel.indexOf(root.currentWallpaper);
+        const nextIndex = (currentIndex + 1) % folderModel.count;
+        const url = folderModel.get(nextIndex);
+        setWallpaper(url, screen);
+    }
+
+    function setWallpaper(path, screen) {
+        if (root.pluginApi == null) {
+            Logger.e("video-wallpaper", "Can't set the wallpaper because pluginApi is null.");
+            return;
+        }
+
+        if(screen !== undefined) {
+            pluginApi.pluginSettings[screen].currentWallpaper = path;
+            pluginApi.pluginSettings[screen].isPlaying = true;
+        } else {
+            for(const screen of Quickshell.screens) {
+                pluginApi.pluginSettings[screen.name].currentWallpaper = path;
+                pluginApi.pluginSettings[screen.name].isPlaying = true;
+            }
+        }
+
+        pluginApi.saveSettings();
+    }
+}
