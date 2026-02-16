@@ -117,7 +117,6 @@ ColumnLayout {
     ToolRow {
         pluginApi: root.pluginApi
         enabled: root.enabled
-        monitorSpecific: root.monitorSpecific
         screenName: root.selectedMonitor
     }
 
