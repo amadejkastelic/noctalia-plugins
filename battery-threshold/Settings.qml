@@ -16,7 +16,7 @@ ColumnLayout {
 
     NText {
         visible: !service.isAvailable
-        text: "No configurable batteries are available on this system"
+        text: pluginApi?.tr("settings.no-battery-device") || "No configurable batteries are available on this system"
         pointSize: Style.fontSizeM
         color: Color.mOnSurfaceVariant
     }
