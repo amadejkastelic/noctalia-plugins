@@ -155,7 +155,7 @@
     {
       "id": "fancy-audiovisualizer",
       "name": "Fancy Audiovisualizer",
-      "version": "1.0.7",
+      "version": "1.0.8",
       "official": true,
       "author": "Noctalia Team",
       "description": "Lemmy's fancy circular audio visualizer.",
@@ -166,7 +166,7 @@
         "Desktop",
         "Audio"
       ],
-      "lastUpdated": "2026-01-25T13:25:41-05:00"
+      "lastUpdated": "2026-02-17T14:33:04-05:00"
     },
     {
       "id": "file-search",
