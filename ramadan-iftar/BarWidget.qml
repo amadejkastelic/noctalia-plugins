@@ -115,7 +115,7 @@ Item {
     if (isVertical) return capsuleHeight;
     return iconSize + labelText.implicitWidth + Style.marginS + Style.marginM * 3;
   }
-  readonly property real contentHeight: isVertical ? capsuleHeight : capsuleHeight
+  readonly property real contentHeight: isVertical ? capsuleHeight + Style.marginM * 2 : capsuleHeight
 
   implicitWidth: contentWidth
   implicitHeight: contentHeight
